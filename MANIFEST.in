@@ -1,0 +1,2 @@
+include *.rst *.txt *.cfg
+graft raspi_door/res
