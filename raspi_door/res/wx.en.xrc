@@ -1,0 +1,205 @@
+<?xml version="1.0" ?>
+<resource class="wxBoxSizer">
+  <object class="wxFrame" name="MainFrame">
+    <object class="wxPanel" name="MainPanel">
+      <object class="wxBoxSizer">
+        <orient>wxVERTICAL</orient>
+        
+        <object class="sizeritem">
+          <object class="wxPanel" name="DisplayPanel">
+            <object class="wxStaticBitmap" name="DisplayImage">
+              <size>240,180</size>
+              <minsize>240,180</minsize>
+              <bitmap>image/camshot.png</bitmap>
+              <hidden>1</hidden>
+            </object>
+            <object class="wxBoxSizer">
+              <object class="sizeritem">
+                <object class="wxBoxSizer">
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="DisplayText">
+                      <label>LOCKED</label>
+                      <fg>#E5E5E5</fg>
+                      <font>
+                        <size>28</size>
+                        <style>normal</style>
+                        <weight>normal</weight>
+                        <underlined>0</underlined>
+                        <family>swiss</family>
+                        <face>Droid Sans</face>
+                        <encoding>UTF-8</encoding>
+                      </font>
+                      <style>wxALIGN_CENTRE</style>
+                    </object>
+                    <flag>wxALIGN_CENTER</flag>
+                  </object>
+                  <orient>wxVERTICAL</orient>
+                </object>
+                <option>1</option>
+                <flag>wxALIGN_CENTER</flag>
+              </object>
+              <orient>wxHORIZONTAL</orient>
+            </object>
+            <bg>#000</bg>
+          </object>
+          <option>1</option>
+          <flag>wxEXPAND</flag>
+          <minsize>240,180</minsize>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="WeatherPanel">
+            <object class="wxBoxSizer">
+            
+              <object class="sizeritem">
+                <object class="wxStaticBitmap" name="NowWeatherIcon">
+                  <bitmap>image/weather.png</bitmap>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <object class="sizeritem">
+                <object class="wxBoxSizer">
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="TodayTempText">
+                      <label>23'/15'C</label>
+                      <fg>#E5E5E5</fg>
+                    </object>
+                    <option>1</option>
+                    <flag>wxALIGN_LEFT</flag>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="TodayWeatherText">
+                      <label>10% Rain</label>
+                      <fg>#E5E5E5</fg>
+                    </object>
+                    <option>1</option>
+                    <flag>wxALIGN_LEFT</flag>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="TodayWindText">
+                      <label>5 k/h NE</label>
+                      <fg>#E5E5E5</fg>
+                    </object>
+                    <option>0</option>
+                    <flag>wxALIGN_LEFT</flag>
+                  </object>
+                  <orient>wxVERTICAL</orient>
+                </object>
+                <option>1</option>
+                <flag>wxTOP|wxBOTTOM|wxEXPAND|wxALIGN_LEFT</flag>
+                <border>3</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxBoxSizer">
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="NowTempText">
+                      <label>24'C</label>
+                      <fg>#E5E5E5</fg>
+                      <font>
+                        <size>20</size>
+                        <style>normal</style>
+                        <weight>normal</weight>
+                        <underlined>0</underlined>
+                        <family>swiss</family>
+                        <face>Droid Sans</face>
+                        <encoding>UTF-8</encoding>
+                      </font>
+                    </object>
+                    <option>1</option>
+                    <flag>wxALIGN_CENTRE</flag>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="NowTimeText">
+                      <label>8:34</label>
+                      <fg>#E5E5E5</fg>
+                      <font>
+                        <size>20</size>
+                        <style>normal</style>
+                        <weight>normal</weight>
+                        <underlined>0</underlined>
+                        <family>swiss</family>
+                        <face>Droid Sans</face>
+                        <encoding>UTF-8</encoding>
+                      </font>
+                    </object>
+                    <option>0</option>
+                    <flag>wxALIGN_CENTRE</flag>
+                  </object>
+                  <orient>wxVERTICAL</orient>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND|wxALIGN_CENTRE</flag>
+              </object>
+              <orient>wxHORIZONTAL</orient>
+            </object>
+            <bg>#000</bg>
+            <hidden>1</hidden>
+          </object>
+          <option>1</option>
+          <flag>wxEXPAND</flag>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="ButtonPanel">
+            <object class="wxBoxSizer">
+              <object class="sizeritem">
+                <object class="wxStaticBitmap" name="LeaveButton">
+                  <bitmap>image/icon-action-exit.png</bitmap>
+                  <bg>#000000</bg>
+                  <hidden>1</hidden>
+                  <style>wxBORDER_NONE</style>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticBitmap" name="UnlockButton">
+                  <bitmap>image/icon-action-unlock.png</bitmap>
+                  <bg>#000000</bg>
+                  <style>wxBORDER_NONE</style>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticBitmap" name="LockButton">
+                  <bitmap>image/icon-action-lock.png</bitmap>
+                  <bg>#000000</bg>
+                  <style>wxBORDER_NONE</style>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticBitmap" name="PermlockButton">
+                  <bitmap>image/icon-action-permlock.png</bitmap>
+                  <bg>#000000</bg>
+                  <hidden>1</hidden>
+                  <style>wxBORDER_NONE</style>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticBitmap" name="InfoButton">
+                  <bitmap>image/icon-action-cam.png</bitmap>
+                  <bg>#000000</bg>
+                  <style>wxBORDER_NONE</style>
+                </object>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+              <orient>wxHORIZONTAL</orient>
+            </object>
+            <bg>#000</bg>
+          </object>
+          <option>1</option>
+          <flag>wxEXPAND</flag>
+        </object>
+      </object>
+      <size>240,320</size>
+      <bg>#000000</bg>
+    </object>
+    <title>Door Control</title>
+    <centered>1</centered>
+  </object>
+</resource>
