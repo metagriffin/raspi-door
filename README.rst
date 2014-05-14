@@ -20,8 +20,8 @@ Raspi-Door Hardware
 TODO.
 
 
-Raspi-Door GUI
-==============
+Raspi-Door Software
+===================
 
 If you want to play with the GUI on Windows or Mac: install the
 wxPython 3.0 with Python 2.7 binaries linked to from
@@ -53,3 +53,14 @@ Install on Linux/Raspberry PI:
   $ raspi-door
 
 TODO: create ``.deb`` downloads...
+
+
+Credits
+=======
+
+* yuv2rgb_: Phil Burgess / Paint Your Dragon for Adafruit Industries
+* picamera_: Dave Hughes
+
+
+.. _yuv2rgb: https://github.com/adafruit/adafruit-pi-cam/blob/master/yuv2rgb.c
+.. _picamera: https://pypi.python.org/pypi/picamera
