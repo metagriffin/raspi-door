@@ -7,6 +7,11 @@ Raspberry Pi Smart-ish Door
   2014/05/13: this project is brand-spanking new, so it is most
   **definitely** not ready for use. Come back in a month or so.
 
+.. IMPORTANT::
+
+  IN CASE YOU MISSED THE "WARNING", THIS PROJECT IS CURRENTLY
+  "PRE-ALPHA", WHICH MEANS IT DOES NOT WORK YET.
+
 The `raspi-door` project comprises the GUI that is run on the
 Raspberry PI on the inside of the door so that you can control your
 door with *awesomeness*... or, as close as I can get it there.
