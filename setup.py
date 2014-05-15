@@ -43,6 +43,9 @@ dependencies = [
   'smoke                >= 0.2.0',
   'picamera             == 0.8',
   'RPi.GPIO             >= 0.5.5',
+  'six                  >= 1.6.1',
+  'aadict               >= 0.2.1',
+  'morph                >= 0.1.1',
 ]
 
 entrypoints = {
