@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
-<resource class="wxBoxSizer">
+<resource class="wxStaticText">
   <object class="wxFrame" name="MainFrame">
     <object class="wxPanel" name="MainPanel">
       <object class="wxBoxSizer">
-        <orient>wxVERTICAL</orient>
-        
         <object class="sizeritem">
           <object class="wxPanel" name="DisplayPanel">
             <object class="wxStaticBitmap" name="DisplayImage">
@@ -47,9 +45,25 @@
           <minsize>240,180</minsize>
         </object>
         <object class="sizeritem">
+          <object class="wxPanel" name="ReminderPanel">
+            <bg>#000</bg>
+            <object class="wxBoxSizer">
+              <object class="sizeritem">
+                <object class="wxStaticText" name="ReminderText">
+                  <label>7pm: Drew and Peter in town</label>
+                  <fg>#E5E555</fg>
+                </object>
+                <option>1</option>
+                <flag>wxALIGN_CENTER</flag>
+              </object>
+              <orient>wxVERTICAL</orient>
+            </object>
+          </object>
+          <flag>wxEXPAND</flag>
+        </object>
+        <object class="sizeritem">
           <object class="wxPanel" name="WeatherPanel">
             <object class="wxBoxSizer">
-            
               <object class="sizeritem">
                 <object class="wxStaticBitmap" name="NowWeatherIcon">
                   <bitmap>image/weather.png</bitmap>
@@ -133,7 +147,6 @@
               <orient>wxHORIZONTAL</orient>
             </object>
             <bg>#000</bg>
-            <hidden>1</hidden>
           </object>
           <option>1</option>
           <flag>wxEXPAND</flag>
@@ -195,6 +208,7 @@
           <option>1</option>
           <flag>wxEXPAND</flag>
         </object>
+        <orient>wxVERTICAL</orient>
       </object>
       <size>240,320</size>
       <bg>#000000</bg>
