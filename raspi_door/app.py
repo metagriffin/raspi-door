@@ -40,7 +40,8 @@ class App(wx.App):
     else:
       self.options.geometry = tuple(
         [int(e) for e in self.options.geometry.split('x')])
-    self.options.mock = morph.tobool(self.options.mock)
+    self.options.mock   = morph.tobool(self.options.mock)
+    self.options.locale = self.options.locale or 'en'
     # start resources
     # todo: check & use self.options.remote...
     self.lock    = lock.MockLock() if self.options.mock else lock.RaspiLock()
@@ -58,6 +59,7 @@ class App(wx.App):
     #         self.wxres = wx.xrc.EmptyXmlResource()
     #         self.wxres.LoadFromString( ...load... )
     #       *but*... how does loading of images, etc work?
+    # todo: degrade to known locale if selected locale does not exist...
     self.wxres = wx.xrc.XmlResource(
       os.path.join(
         os.path.dirname(__file__), 'res', 'wx.%s.xrc' % (self.options.locale,)))
