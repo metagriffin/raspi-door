@@ -21,29 +21,32 @@
 
 import os
 import wx, wx.xrc
+from aadict import aadict
+import morph
 
 from .i18n import _
 from . import lock
-
-#------------------------------------------------------------------------------
-def print_lock_change(attribute=None, old=None, value=None):
-  print 'LOCKCHANGE.%s: from %r to %r' % (attribute, old, value)
 
 #------------------------------------------------------------------------------
 class App(wx.App):
 
   #----------------------------------------------------------------------------
   def __init__(self, options, *args, **kw):
-    self.options = options
-    # todo: move to using config...
-    # self.locale = self.getConfig('DEFAULT', 'locale', 'en')
-    self.locale = 'en'
-    self.lock   = lock.MockLock()
+    self.options = aadict(vars(options))
+    # process options
+    self.options.geometry = self.options.geometry or 'fullscreen'
+    if self.options.geometry == 'fullscreen':
+      self.options.geometry = None
+    else:
+      self.options.geometry = tuple(
+        [int(e) for e in self.options.geometry.split('x')])
+    self.options.mock = morph.tobool(self.options.mock)
+    # start resources
+    # todo: check & use self.options.remote...
+    self.lock    = lock.MockLock() if self.options.mock else lock.RaspiLock()
+    self.camera  = None # todo
+    self.weather = None # todo
     super(App, self).__init__(*args, **kw)
-
-    # todo: remove
-    self.lock.change.subscribe(print_lock_change)
-
 
   #----------------------------------------------------------------------------
   def start(self):
@@ -57,13 +60,13 @@ class App(wx.App):
     #       *but*... how does loading of images, etc work?
     self.wxres = wx.xrc.XmlResource(
       os.path.join(
-        os.path.dirname(__file__), 'res', 'wx.%s.xrc' % (self.locale,)))
+        os.path.dirname(__file__), 'res', 'wx.%s.xrc' % (self.options.locale,)))
     self.main = self.wxres.LoadFrame(None, 'MainFrame')
-    # todo: generalize this...
-    # TODO: figure out why size=240x320 turned into 230x291....
-    self.main.SetSize((250, 349))
+    if self.options.geometry:
+      self.main.SetSize(self.options.geometry)
+    else:
+      self.main.ShowFullScreen(True)
     self.main.Show()
-    self.main.Centre()
     self.SetTopWindow(self.main)
     self.initDisplay()
     self.initTime()
@@ -172,10 +175,6 @@ class App(wx.App):
     self.disptext.SetLabel(msg)
     self.showDisplayText(True)
     self.disppanel.Layout()
-
-  #----------------------------------------------------------------------------
-  def toggleFullScreen(self):
-    self.main.ShowFullScreen(not self.main.IsFullScreen())
 
 
 #------------------------------------------------------------------------------

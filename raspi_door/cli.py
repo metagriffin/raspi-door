@@ -23,15 +23,10 @@ import os
 # import os.path
 import argparse
 import logging
-# import wx
-# import wx.lib.embeddedimage
-# from wx.lib.wordwrap import wordwrap
-# from wx import xrc, wizard
-# from secpass import engine, api
+import six
+from six.moves import configparser as CP
 # import asset
 # import morph
-# import six
-# from six.moves import configparser as CP
 
 #from . import taskbar
 from .app import App
@@ -41,7 +36,7 @@ from .i18n import _
 def main(args=None):
 
   cli = argparse.ArgumentParser(
-    description = _('Raspberry Pi intelligent door GUI.'),
+    description = _('Raspberry Pi smart-ish door controller.'),
   )
 
   cli.add_argument(
@@ -52,9 +47,14 @@ def main(args=None):
 
   cli.add_argument(
     _('-c'), _('--config'), metavar=_('FILENAME'),
-    dest='config',
+    dest='configPath',
     default=os.environ.get('RASPIDOOR_CONFIG', '~/.config/raspi-door/config.ini'),
     help=_('configuration filename (current default: "{}")', '%(default)s'))
+
+  cli.add_argument(
+    _('-g'), _('--geometry'), metavar=_('GEOMETRY'),
+    dest='geometry',
+    help=_('set the window geometry (either WIDTHxHEIGHT or "fullscreen")'))
 
   cli.add_argument(
     _('-m'), _('--mock'),
@@ -68,7 +68,6 @@ def main(args=None):
 
   options = cli.parse_args(args=args)
 
-  # todo: share this with secpass?...
   # TODO: send logging to "log" window?... (is this done by wx???)
   rootlog = logging.getLogger()
   rootlog.setLevel(logging.WARNING)
@@ -80,7 +79,21 @@ def main(args=None):
   elif options.verbose > 1:
     rootlog.setLevel(logging.DEBUG)
 
-  options.config = os.path.expanduser(os.path.expandvars(options.config))
+  options.configPath = os.path.expanduser(os.path.expandvars(options.configPath))
+
+  cfg = options.config = CP.SafeConfigParser()
+  cfg.read(options.configPath)
+
+  # todo: there has *got* to be a better way of merging options...
+  if cfg.has_section('gui'):
+    if cfg.has_option('gui', 'verbose'):
+      options.verbose = max(options.verbose, cfg.getint('gui', 'verbose'))
+    for opt in cfg.options('gui'):
+      if opt in ('verbose',):
+        continue
+      if not getattr(options, opt, None):
+        val = cfg.get('gui', opt)
+        setattr(options, opt, val)
 
   App(options).start()
 

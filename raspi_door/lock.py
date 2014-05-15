@@ -90,6 +90,11 @@ class Lock(smoke.Broker):
     raise NotImplementedError()
 
 #------------------------------------------------------------------------------
+class RaspiLock(Lock):
+  # TODO: implement...
+  pass
+
+#------------------------------------------------------------------------------
 class MockLock(Lock):
 
   #----------------------------------------------------------------------------
@@ -100,20 +105,18 @@ class MockLock(Lock):
       return
     self._update('tostate', self._request)
     self._update('request', None)
-    wx.CallLater(500, self.process_next).Start()
+    wx.CallLater(1000, self.process_next).Start()
 
   #----------------------------------------------------------------------------
   def process_next(self):
     with self._rlock:
       if self._tostate is None:
         return
-
-
       self._update('state', self._tostate)
       self._update('tostate', self._request)
       self._update('request', None)
       if self._tostate is not None:
-        wx.CallLater(500, self.process_next).Start()
+        wx.CallLater(1000, self.process_next).Start()
 
 #------------------------------------------------------------------------------
 # end of $Id$
