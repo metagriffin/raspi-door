@@ -46,6 +46,7 @@ dependencies = [
   'six                  >= 1.6.1',
   'aadict               >= 0.2.1',
   'morph                >= 0.1.1',
+  'asset                >= 0.6',          # globre >= 0.1.2
 ]
 
 entrypoints = {
