@@ -61,10 +61,10 @@ def main(args=None):
     dest='mock', default=False, action='store_true',
     help=_('don\'t attempt to connect to any hardware'))
 
-  cli.add_argument(
-    _('-r'), _('--remote'),
-    dest='remote', default=None, action='store',
-    help=_('specify remote raspi-door-server URL'))
+  # cli.add_argument(
+  #   _('-r'), _('--remote'),
+  #   dest='remote', default=None, action='store',
+  #   help=_('specify remote raspi-door-server URL'))
 
   options = cli.parse_args(args=args)
 
