@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<resource class="wxStaticText">
+<resource class="wxFrame">
   <object class="wxFrame" name="MainFrame">
     <object class="wxPanel" name="MainPanel">
       <object class="wxBoxSizer">
@@ -8,7 +8,7 @@
             <object class="wxStaticBitmap" name="DisplayImage">
               <size>240,180</size>
               <minsize>240,180</minsize>
-              <bitmap>image/camshot.png</bitmap>
+              <bitmap>image/camera-na.png</bitmap>
               <hidden>1</hidden>
             </object>
             <object class="wxBoxSizer">
@@ -50,7 +50,7 @@
             <object class="wxBoxSizer">
               <object class="sizeritem">
                 <object class="wxStaticText" name="ReminderText">
-                  <label>7pm: Drew and Peter in town</label>
+                  <label>7pm: Dinner with friends</label>
                   <fg>#E5E555</fg>
                 </object>
                 <option>1</option>
@@ -66,7 +66,7 @@
             <object class="wxBoxSizer">
               <object class="sizeritem">
                 <object class="wxStaticBitmap" name="NowWeatherIcon">
-                  <bitmap>image/weather.png</bitmap>
+                  <bitmap>mock/weather.png</bitmap>
                 </object>
                 <option>1</option>
                 <flag>wxEXPAND</flag>
