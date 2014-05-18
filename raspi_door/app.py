@@ -26,6 +26,11 @@ import morph
 import six
 import threading
 import time
+import atexit
+try:
+  import picamera
+except RuntimeError:
+  picamera = None
 
 from .i18n import _
 from . import lock, camera
@@ -96,9 +101,15 @@ class App(wx.App):
     self.options.locale = self.options.locale or 'en'
     # start resources
     # todo: check & use self.options.remote...
-    self.lock    = lock.MockLock() if self.options.mock else lock.RaspiLock()
-    self.camera  = camera.MockCamera() if self.options.mock else camera.RaspiCamera() # todo
-    self.weather = None # todo
+    if self.options.mock:
+      self.lock    = lock.MockLock()
+      self.camera  = camera.MockCamera()
+      self.weather = None # todo
+    else:
+      self.lock    = lock.RaspiLock()
+      self.camera  = picamera.PiCamera()
+      atexit.register(self.camera.close)
+      self.weather = None # todo
     super(App, self).__init__(*args, **kw)
 
   #----------------------------------------------------------------------------
