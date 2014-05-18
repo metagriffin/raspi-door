@@ -74,12 +74,10 @@ class CameraCaptureThread(threading.Thread):
   #----------------------------------------------------------------------------
   def capture(self):
     # todo: make this `resize` depend on the screen...
-    self._buf.seek(0)
-    self.app.camera.capture(self._buf, format='png', resize=(240, 180))
-    self._buf.seek(0)
-    bmp = wx.BitmapFromImage(wx.ImageFromStream(self._buf))
-    # wx.PostEvent(self.app.dispimg, CameraCaptureThread.CaptureEvent(bmp))
-    wx.CallAfter(self.app.onCapture, aadict(bitmap=bmp))
+    buf = six.BytesIO()
+    self.app.camera.capture(buf, format='png', resize=(240, 180))
+    buf.seek(0)
+    wx.CallAfter(self.app.displayCapture, buf)
 
 #------------------------------------------------------------------------------
 class App(wx.App):
@@ -148,13 +146,17 @@ class App(wx.App):
     self.disp_thread = CameraCaptureThread(self)
     self.disp_thread.daemon = True
     self.disp_thread.start()
-    # self.dispimg.Connect(-1, -1, CameraCaptureThread.CaptureEvent.ID, self.onCapture)
 
   #----------------------------------------------------------------------------
-  def onCapture(self, event):
-    # todo: perhaps check to make sure that the camera is visible?
+  def displayCapture(self, stream):
+    if not self.dispimg.Shown:
+      return
     # TODO: check to see if we are falling behind and, if so, drop the frame
-    self.dispimg.SetBitmap(event.bitmap)
+    # TODO: apparently, converting the stream to bitmap must be done in the
+    #       main gui thread (otherwise i get XInitThreads complaints...).
+    #       that sucks. figure out how to move this into a separate thread.
+    bitmap = wx.BitmapFromImage(wx.ImageFromStream(stream))
+    self.dispimg.SetBitmap(bitmap)
 
   #----------------------------------------------------------------------------
   def toggleDisplay(self, event):
