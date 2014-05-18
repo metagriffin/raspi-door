@@ -49,10 +49,10 @@ Install on Linux/Raspberry PI:
   $ wget http://downloads.sourceforge.net/project/wxpython/wxPython/3.0.0.0/wxPython-src-3.0.0.0.tar.bz2
   $ tar xvjf wxPython-src-3.0.0.0.tar.bz2
   $ cd wxPython-src-3.0.0.0/wxPython
-  # warning: the next step can take a *very* long time...
-  $ python build-wxpython.py --install
-    # if building into a virtualenv, add " --installdir=$VIRTUAL_ENV" to the last line
-    # and set your LD_LIBRARY_PATH to include "$VIRTUAL_ENV/usr/local/lib"
+  # warning: the next step can take a *very* long time (9h on a pi)...
+  > if building into a virtualenv, add " --installdir=$VIRTUAL_ENV"
+  > and set your LD_LIBRARY_PATH to include "$VIRTUAL_ENV/usr/local/lib"
+    $ python build-wxpython.py --install
 
   $ pip install raspi-door
   $ raspi-door
