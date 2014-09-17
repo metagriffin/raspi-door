@@ -39,14 +39,18 @@ test_dependencies = [
 
 dependencies = [
   'distribute           >= 0.6.24',
-  'wxPython             >= 3.0.0.0',
   'smoke                >= 0.2.0',
-  'picamera             == 0.8',
+  'picamera             >= 0.8',
   'RPi.GPIO             >= 0.5.5',
   'six                  >= 1.6.1',
   'aadict               >= 0.2.1',
   'morph                >= 0.1.1',
   'asset                >= 0.6',          # globre >= 0.1.2
+  'pygame               >= 1.9.1',
+  'pgu                  >= 0.18',
+  'pytz                 >= 2014.4',
+  'requests             >= 2.3.0',
+  'protobuf             >= 2.5.0',
 ]
 
 entrypoints = {
@@ -89,7 +93,7 @@ setup(
   packages              = find_packages(),
   platforms             = ['any'],
   include_package_data  = True,
-  zip_safe              = False, # todo: get wx.xrc to use pkg_resources...
+  zip_safe              = False, # todo: get pgu.gui.Theme to use pkg_resources...
   install_requires      = dependencies,
   tests_require         = test_dependencies,
   test_suite            = 'raspi_door',
