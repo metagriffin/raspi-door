@@ -28,36 +28,7 @@ TODO.
 Raspi-Door Software
 ===================
 
-If you want to play with the GUI on Windows or Mac: install the
-wxPython 3.0 with Python 2.7 binaries linked to from
-`http://wxpython.org/download.php`_. Then, on the command line, type:
-
-.. code-block:: bash
-
-  $ pip install raspi-door
-  $ raspi-door --mock
-
-TODO: create ``.exe`` and ``.dmg`` downloads for Windows and Mac
-users...
-
-Install on Linux/Raspberry PI:
-
-.. code-block:: bash
-
-  # install wxPython 3.0.0.0
-
-  $ wget http://downloads.sourceforge.net/project/wxpython/wxPython/3.0.0.0/wxPython-src-3.0.0.0.tar.bz2
-  $ tar xvjf wxPython-src-3.0.0.0.tar.bz2
-  $ cd wxPython-src-3.0.0.0/wxPython
-  # warning: the next step can take a *very* long time (9h on a pi)...
-  > if building into a virtualenv, add " --installdir=$VIRTUAL_ENV"
-  > and set your LD_LIBRARY_PATH to include "$VIRTUAL_ENV/usr/local/lib"
-    $ python build-wxpython.py --install
-
-  $ pip install raspi-door
-  $ raspi-door
-
-TODO: create ``.deb`` downloads...
+TODO.
 
 
 Credits
