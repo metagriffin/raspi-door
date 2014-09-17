@@ -20,15 +20,11 @@
 #------------------------------------------------------------------------------
 
 import os
-# import os.path
 import argparse
 import logging
 import six
 from six.moves import configparser as CP
-# import asset
-# import morph
 
-#from . import taskbar
 from .app import App
 from .i18n import _
 
@@ -68,12 +64,12 @@ def main(args=None):
 
   options = cli.parse_args(args=args)
 
-  # TODO: send logging to "log" window?... (is this done by wx???)
+  # TODO: send logging to "log" window?...
   rootlog = logging.getLogger()
   rootlog.setLevel(logging.WARNING)
   rootlog.addHandler(logging.StreamHandler())
   # TODO: add a logging formatter...
-  # TODO: configure logging from config.ini?...
+  # TODO: configure logging from config.ini?... ==> `[gui] verbose = X`
   if options.verbose == 1:
     rootlog.setLevel(logging.INFO)
   elif options.verbose > 1:

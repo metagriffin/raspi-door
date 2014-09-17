@@ -21,14 +21,15 @@
 
 import threading
 import smoke
-import wx
+#import wx
+
+# todo: convert Lock into a LockService?...
 
 #------------------------------------------------------------------------------
 class Lock(smoke.Broker):
 
-  LOCKED     = 1
-  PERMANENT  = 2
-  ONCLOSE    = 4
+  LOCKED     = 1 << 0
+  PERMANENT  = 1 << 1
 
   change        = smoke.signal('change')
   stateChange   = smoke.signal('state-change')
@@ -105,7 +106,7 @@ class MockLock(Lock):
       return
     self._update('tostate', self._request)
     self._update('request', None)
-    wx.CallLater(1000, self.process_next).Start()
+    self._defer(1, self.process_next)
 
   #----------------------------------------------------------------------------
   def process_next(self):
@@ -116,7 +117,13 @@ class MockLock(Lock):
       self._update('tostate', self._request)
       self._update('request', None)
       if self._tostate is not None:
-        wx.CallLater(1000, self.process_next).Start()
+        self._defer(1, self.process_next)
+
+  #----------------------------------------------------------------------------
+  def _defer(self, seconds, func, *args, **kw):
+    t = threading.Timer(seconds, func, *args, **kw)
+    t.daemon = True
+    t.start()
 
 #------------------------------------------------------------------------------
 # end of $Id$
