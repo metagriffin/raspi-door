@@ -29,7 +29,6 @@ from xml.etree import ElementTree as ET
 from pgu import gui
 import six
 import csv
-import morph
 
 from .service import Service
 from .icon import Icon
@@ -61,7 +60,6 @@ class WeatherService(Service):
   #----------------------------------------------------------------------------
   def start(self):
     self.interval = float(self.getConfig('interval', 1800))
-    self.mock     = morph.tobool(self.getConfig('mock', 'false'))
     self.metric   = self.getConfig('units', 'metric') != 'imperial'
     self.woeid    = self.getConfig('woeid', '615702')
     self.url      = self.getConfig('url', self.DEFAULT_URL)
