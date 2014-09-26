@@ -46,6 +46,9 @@ class AlertService(Service):
 
   #----------------------------------------------------------------------------
   def bumpNext(self):
+    if self.mock and not self.getConfig('message', None):
+      self.next = None
+      return self
     if self.next is None:
       self.next = time.time()
       return self
