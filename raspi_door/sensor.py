@@ -24,8 +24,11 @@ import time
 import threading
 import logging
 import morph
-import subprocess
 import atexit
+import pygame
+import re
+import asset
+import six
 
 from .service import Service
 from .trap import Trap
@@ -37,6 +40,12 @@ except RuntimeError:
 
 #------------------------------------------------------------------------------
 log = logging.getLogger(__name__)
+
+DEFAULT_EVENT_ACTION = {
+  'bell.pressed.play' : 'raspi_door:res/audio/doorbell.ogg',
+}
+
+isAssetSpec = re.compile('^[a-z][a-z0-9_]*:', re.IGNORECASE)
 
 #------------------------------------------------------------------------------
 class SensorService(Service, Trap):
@@ -51,17 +60,20 @@ class SensorService(Service, Trap):
   def start(self):
     self.next     = None
     self.mock     = morph.tobool(self.getConfig('mock', 'false'))
+    self.motion   = False
+    self._led     = False
     self.ledpin   = int(self.getConfig('gpio.led', '18'))
     self.pirpin   = int(self.getConfig('gpio.pir', '22'))
     self.btnpin   = int(self.getConfig('gpio.button', '23'))
+    self.sounds   = dict()
     self.on(':', self.onSense)
     if not self.mock:
       self.startGpio()
-
-    self.thread   = threading.Thread(
-      name='raspi_door.sensor.SensorService', target=self.runBackground)
-    self.thread.daemon = True
-    self.thread.start()
+    else:
+      self.thread = threading.Thread(
+        name='raspi_door.sensor.SensorService', target=self.runMockSense)
+      self.thread.daemon = True
+      self.thread.start()
     return self
 
   #----------------------------------------------------------------------------
@@ -70,49 +82,65 @@ class SensorService(Service, Trap):
       raise RuntimeError('Raspberry PI\'s GPIO not available')
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(self.btnpin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(self.ledpin, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(self.ledpin, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(self.pirpin, GPIO.IN)
     atexit.register(GPIO.cleanup)
+    btime = int(1000 * float(self.getConfig('bell.debounce', 0.2)))
+    GPIO.add_event_detect(self.btnpin, GPIO.FALLING, callback=self.onBellPressed, bouncetime=btime)
+    GPIO.add_event_detect(self.pirpin, GPIO.BOTH,  callback=self.onMotionDetected)
+
+  @property
+  def led(self):
+    return self._led
+
+  @led.setter
+  def led(self, value):
+    self._led = bool(value)
+    GPIO.output(self.ledpin, self._led)
+
+  #----------------------------------------------------------------------------
+  def onBellPressed(self, *args, **kw):
+    self.trigger('bell', 'pressed')
+
+  #----------------------------------------------------------------------------
+  def onMotionDetected(self, *args, **kw):
+    self.trigger('motion', 'started' if GPIO.input(self.pirpin) else 'stopped')
 
   #----------------------------------------------------------------------------
   def onSense(self, topic, event, *args, **kw):
-    run = self.getConfig(topic + '.' + event + '.exec', 'bling')
-    if run:
-      # todo: make this a little less "suppressive"...
-      if not self.mock:
-        GPIO.output(self.ledpin, False)
-      subprocess.call(run + ' > /dev/null 2>&1', shell=True, close_fds=True)
-      if not self.mock:
-        GPIO.output(self.ledpin, True)
+    if topic == 'motion':
+      self.motion = event == 'started'
+    self.app.shellexec(self.getConfig(topic + '.' + event + '.exec', None))
+    evt = topic + '.' + event + '.play'
+    if evt not in self.sounds:
+      # todo: support defaulting to ``raspi_door:res/audio/doorbell.ogg``...
+      play = self.getConfig(evt, DEFAULT_EVENT_ACTION.get(evt, None))
+      if play and isAssetSpec.match(play):
+        play = six.BytesIO(asset.load(play).read())
+      if play:
+        self.sounds[evt] = pygame.mixer.Sound(play)
+    if evt in self.sounds:
+      self.sounds[evt].play()
 
   #----------------------------------------------------------------------------
   def run(self):
     pass
 
   #----------------------------------------------------------------------------
-  def runBackground(self):
+  def runMockSense(self):
     while True:
       try:
-        self.sense()
+        self.mockSense()
       except Exception:
         log.exception('error while waiting for sense events')
         time.sleep(10)
-
-  #----------------------------------------------------------------------------
-  def sense(self):
-    if self.mock:
-      return self.mockSense()
-    ## todo: listen for motion too...
-    ## todo: use this instead?...
-    ##   GPIO.add_event_detect(self.btnpin, GPIO.FALLING, callback=self.onBellPressed)
-    GPIO.wait_for_edge(self.btnpin, GPIO.FALLING)
-    self.trigger('bell', 'pressed')
 
   #----------------------------------------------------------------------------
   def mockSense(self):
     sense = raw_input('Emulate sensor (b=bell, m=motion, l=lock, n=nfc): ')
     lut = dict(
       b = ('bell', 'pressed'),
-      m = ('motion', 'detected'),
+      m = ('motion', 'started'),
       l = ('lock', 'pressed'),
       n = ('nfc', 'read'),
     )
@@ -121,6 +149,8 @@ class SensorService(Service, Trap):
       return
     event = lut[sense]
     self.trigger(*event)
+    if event[0] == 'motion':
+      threading.Timer(5, self.trigger, ['motion', 'stopped']).start()
 
 #------------------------------------------------------------------------------
 # end of $Id$
