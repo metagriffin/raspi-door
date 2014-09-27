@@ -64,6 +64,9 @@ Raspi-Door Software
 
 .. code-block:: bash
 
+  # (all commands as root *or* preceded with "sudo " *or* you
+  #  know what you are doing... :-)
+
   # (optional) create a virtualenv for raspi-door
   $ virtualenv --prompt '(raspi-door) ' /path/to/virtualenv
   $ . /path/to/virtualenv/bin/activate
@@ -73,6 +76,12 @@ Raspi-Door Software
   $ easy_install pygame==1.9.1release pgu==0.18
 
   $ pip install raspi-door
+
+  # configure raspi-door
+  $ raspi-door --initialize > /etc/raspi-door.conf
+  $ nano /etc/raspi-door.conf
+    # review all of the configuration options... and open a
+    # raspi-door issue if anything is "unclear" :-)
 
 
 Troubleshooting
