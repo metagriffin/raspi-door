@@ -42,7 +42,7 @@ dependencies = [
   'smoke                >= 0.2.0',
   'picamera             >= 0.8',
   'RPi.GPIO             >= 0.5.5',
-  'six                  >= 1.6.1',
+  'six                  >= 1.8.0',
   'aadict               >= 0.2.1',
   'morph                >= 0.1.1',
   'asset                >= 0.6',          # globre >= 0.1.2

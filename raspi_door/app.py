@@ -20,6 +20,7 @@
 #------------------------------------------------------------------------------
 
 import os
+import sys
 import six
 import time
 import threading
@@ -40,6 +41,8 @@ import smoke
 from pgu import gui
 import logging
 from six.moves import configparser as CP
+from six.moves import shlex_quote
+import subprocess
 
 from .i18n import _
 from . import lock, camera, event, trap
@@ -52,6 +55,21 @@ from .sensor import SensorService
 #------------------------------------------------------------------------------
 CaptureEvent = event.newEvent()
 log = logging.getLogger(__name__)
+
+DEFAULT_SCREEN_INIT_EXEC = '''
+  echo 252 > /sys/class/gpio/export ;
+  echo out > /sys/class/gpio/gpio252/direction ;
+  echo 1 > /sys/class/gpio/gpio252/value ;
+'''
+
+DEFAULT_SCREEN_SLEEP_EXEC = '''
+  echo 0 > /sys/class/gpio/gpio252/value ;
+'''
+
+## TODO: the `wake` also needs to tell the X-display to wake up...
+DEFAULT_SCREEN_WAKE_EXEC = '''
+  echo 1 > /sys/class/gpio/gpio252/value ;
+'''
 
 # #------------------------------------------------------------------------------
 # class CameraCaptureThread(threading.Thread):
@@ -141,6 +159,18 @@ class App(object):
       return default
 
   #----------------------------------------------------------------------------
+  def shellexec(self, command):
+    if not command:
+      return
+    # todo: make this a little less "suppressive" and log to logfile?...
+    subprocess.call('( ' + command + ' ) > /dev/null 2>&1 &', shell=True, close_fds=True)
+    # for example, but use logging instead:
+    ##    subprocess.call(
+    ##      'echo ' + shlex_quote(command) + ' >> /tmp/raspi-door.shellexec.log', shell=True, close_fds=True)
+    ##    subprocess.call(
+    ##      '( ' + command + ' ) >> /tmp/raspi-door.shellexec.log 2>&1 &', shell=True, close_fds=True)
+
+  #----------------------------------------------------------------------------
   # todo: is there a way to mark this as a "cacheable" property?...
   @property
   def resdir(self):
@@ -157,9 +187,7 @@ class App(object):
     # self.initCamera()
     self.initLock()
     # self.draw()
-
     self.sensors.on(':', self.sensorAction)
-
     self.mainLoop()
 
   #----------------------------------------------------------------------------
@@ -172,34 +200,42 @@ class App(object):
   #----------------------------------------------------------------------------
   def wake(self):
     self.state.showscreen = True
+    self.shellexec(self.getConfig('wake.exec', section='screen', default=DEFAULT_SCREEN_WAKE_EXEC))
+    self.resetSleeper()
+    return self
+
+  #----------------------------------------------------------------------------
+  def sleep(self):
+    if self.sensors.motion:
+      self.resetSleeper()
+      return self
+    self.state.showscreen = False
+    self.shellexec(self.getConfig('sleep.exec', section='screen', default=DEFAULT_SCREEN_SLEEP_EXEC))
+    return self
+
+  #----------------------------------------------------------------------------
+  def resetSleeper(self):
     # TODO: protect with mutexes!...
     if self.sleeper:
       self.sleeper.cancel()
     self.sleeper = threading.Timer(
-      float(self.getConfig('sleep', section='screen', default=10)),
+      float(self.getConfig('timeout', section='screen', default=10)),
       self.sleep)
     self.sleeper.daemon = True
     self.sleeper.start()
-
-  #----------------------------------------------------------------------------
-  def sleep(self):
-    # TODO: protect with mutexes!...
-    # TODO: check to see if the motion sensor is still triggering... if so
-    #       wait sleep / 2 longer...
-    self.state.showscreen = False
+    return self
 
   #----------------------------------------------------------------------------
   def onShowScreen(self, old, new, **kw):
     if new:
-      # note: this is to reset the sleeper timer
-      self.wake()
-    print 'SCREEN-SHOW:',repr(new),'<=',repr(old)
+      self.resetSleeper()
+    print 'SCREEN-SHOW:',repr(old),'=>',repr(new)
     # TODO...
 
   #----------------------------------------------------------------------------
   def initUI(self):
     pygame.init()
-    pygame.fastevent.init()
+    # pygame.fastevent.init()
     pygame.display.set_caption(_('Door Controller'))
     if not self.options.mock:
       pygame.mouse.set_visible(False)
@@ -242,33 +278,33 @@ class App(object):
     self.state.on('showscreen:changed', self.onShowScreen)
     self.state.showscreen = True
 
+    self.shellexec(self.getConfig('init.exec', section='screen', default=DEFAULT_SCREEN_INIT_EXEC))
+
   #----------------------------------------------------------------------------
   def onButtonClick(self):
     self.wake()
 
   #----------------------------------------------------------------------------
-  def onButtonAlert(self):    print 'CLICKED: btn-alert'
-  def onButtonWeather(self):  print 'CLICKED: btn-weather'
-  def onButtonExit(self):     print 'CLICKED: btn-exit'
-
-  #----------------------------------------------------------------------------
   def onButtonUnlock(self):
-    print 'CLICKED: btn-unlock'
     self.lock.state = 0
 
   #----------------------------------------------------------------------------
   def onButtonLock(self):
-    print 'CLICKED: btn-lock'
     self.lock.state = self.lock.LOCKED
 
   #----------------------------------------------------------------------------
   def onButtonPermLock(self):
-    print 'CLICKED: btn-permlock'
     self.lock.state = self.lock.LOCKED | self.lock.PERMANENT
 
   #----------------------------------------------------------------------------
   def onButtonInfo(self):
+    # TODO
     print 'CLICKED: btn-info'
+
+  #----------------------------------------------------------------------------
+  def onButtonAlert(self):    print 'CLICKED: btn-alert'    # todo
+  def onButtonWeather(self):  print 'CLICKED: btn-weather'  # todo
+  def onButtonExit(self):     print 'CLICKED: btn-exit'     # todo
 
   # #----------------------------------------------------------------------------
   # def initCamera(self):

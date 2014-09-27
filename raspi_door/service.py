@@ -19,6 +19,8 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------
 
+import morph
+
 #------------------------------------------------------------------------------
 class Service(object):
 
@@ -29,6 +31,7 @@ class Service(object):
     super(Service, self).__init__(*args, **kw)
     self.app  = app
     self.next = None
+    self.mock = morph.tobool(self.getConfig('mock', 'false'))
 
   #----------------------------------------------------------------------------
   def getConfig(self, option, default=None, **kw):

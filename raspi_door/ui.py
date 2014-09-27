@@ -43,6 +43,9 @@ class UI(gui.Container):
         .add(gui.Label('--', cls='label.alert', name='lbl-alert'),
              weight=1, flags=Sizer.EXPAND)
 
+    # todo: this has issues with the AlertService...
+    self.alertbox.style.hidden = True
+
     self.infobox = Sizer(width=240, height=180) \
         .add(gui.Label('--', cls='label.huge', name='lbl-lock-state'), weight=132, flags=Sizer.EXPAND) \
         .add(self.alertbox, weight=48, flags=Sizer.EXPAND)

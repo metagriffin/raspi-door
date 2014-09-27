@@ -21,7 +21,6 @@
 
 import time
 import logging
-import morph
 
 from .service import Service
 from .icon import Icon
@@ -37,10 +36,7 @@ class AlertService(Service):
   #----------------------------------------------------------------------------
   def __init__(self, *args, **kw):
     super(AlertService, self).__init__(*args, **kw)
-    # todo: move `mock` into `service.Service`...
-    self.mock = morph.tobool(self.getConfig('mock', 'false'))
     self.showing = False
-
     if not self.mock:
       raise NotImplementedError('AlertService: only `mock` mode is implemented')
 
@@ -50,6 +46,9 @@ class AlertService(Service):
 
   #----------------------------------------------------------------------------
   def bumpNext(self):
+    if self.mock and not self.getConfig('message', None):
+      self.next = None
+      return self
     if self.next is None:
       self.next = time.time()
       return self
