@@ -29,8 +29,16 @@ import atexit
 try:
   import warnings
   warnings.filterwarnings('ignore')
+  # this unnecessary libmmal and libbcm_host loading is just to avoid
+  # the nasty `print` statements in picamera if being run on a
+  # non-raspi... ugh.
+  # todo: submit a patch to picamera to convert the prints to warnings...
+  import ctypes as ct
+  ct.CDLL('libbcm_host.so')
+  ct.CDLL('libmmal.so')
+  # /todo
   import picamera
-except RuntimeError:
+except (RuntimeError, OSError):
   picamera = None
 finally:
   warnings.resetwarnings()
@@ -311,6 +319,8 @@ class App(object):
   #   if self.options.mock:
   #     self.camera   = camera.MockCamera()
   #   else:
+  #     if not picamera:
+  #       raise RuntimeError('Raspberry PI\'s picamera not available')
   #     self.camera   = picamera.PiCamera()
   #     atexit.register(self.camera.close)
   #   self.camera.resolution     = (240, 180)
