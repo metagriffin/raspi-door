@@ -20,13 +20,20 @@
 #------------------------------------------------------------------------------
 
 import os
+import sys
 import argparse
 import logging
 import six
 from six.moves import configparser as CP
+import asset
 
 from .app import App
 from .i18n import _
+
+#------------------------------------------------------------------------------
+
+DEFAULT_VERBOSE = 0
+DEFAULT_CONFIG  = '/etc/raspi-door.conf'
 
 #------------------------------------------------------------------------------
 def main(args=None):
@@ -38,13 +45,21 @@ def main(args=None):
   cli.add_argument(
     _('-v'), _('--verbose'),
     dest='verbose', action='count',
-    default=int(os.environ.get('RASPIDOOR_VERBOSE', '0')),
+    default=int(os.environ.get('RASPIDOOR_VERBOSE', DEFAULT_VERBOSE)),
     help=_('increase logging verbosity (can be specified multiple times)'))
+
+  cli.add_argument(
+    _('-i'), _('--initialize'),
+    dest='init', default=False, action='store_true',
+    help=_('output a default configuration to STDOUT (typically used with'
+           ' something like'
+           ' "%(prog)s --initialize > ' + DEFAULT_CONFIG + '"'
+           ' and then edited by hand)'))
 
   cli.add_argument(
     _('-c'), _('--config'), metavar=_('FILENAME'),
     dest='configPath',
-    default=os.environ.get('RASPIDOOR_CONFIG', '~/.config/raspi-door/config.ini'),
+    default=os.environ.get('RASPIDOOR_CONFIG', DEFAULT_CONFIG),
     help=_('configuration filename (current default: "{}")', '%(default)s'))
 
   cli.add_argument(
@@ -55,7 +70,9 @@ def main(args=None):
   cli.add_argument(
     _('-m'), _('--mock'),
     dest='mock', default=False, action='store_true',
-    help=_('don\'t attempt to connect to any hardware'))
+    help=_('enable mock mode of all services, hardware, software, wetware,'
+           ' mother-in-laws, earth-spheroid gravitational laws and general'
+           ' parameters of the universe (where possible, of course)'))
 
   # cli.add_argument(
   #   _('-r'), _('--remote'),
@@ -64,12 +81,16 @@ def main(args=None):
 
   options = cli.parse_args(args=args)
 
+  if options.init:
+    sys.stdout.write(asset.load('raspi_door:res/config.ini').read())
+    return 0
+
   # TODO: send logging to "log" window?...
   rootlog = logging.getLogger()
   rootlog.setLevel(logging.WARNING)
   rootlog.addHandler(logging.StreamHandler())
   # TODO: add a logging formatter...
-  # TODO: configure logging from config.ini?... ==> `[gui] verbose = X`
+  # TODO: configure logging from config?... ==> `[gui] verbose = X`
   if options.verbose == 1:
     rootlog.setLevel(logging.INFO)
   elif options.verbose > 1:
