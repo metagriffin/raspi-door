@@ -3,7 +3,7 @@ ChangeLog
 =========
 
 
-v0.3.1
+v0.4.0
 ======
 
 * Add sample configuration output
