@@ -3,6 +3,13 @@ ChangeLog
 =========
 
 
+v0.3.1
+======
+
+* Add sample configuration output
+* Cleaned up non-Raspberry Pi run/mock mode
+
+
 v0.3.0
 ======
 
