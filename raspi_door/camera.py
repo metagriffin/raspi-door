@@ -19,10 +19,17 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------
 
+import six
 import asset
+import pygame
 
 #------------------------------------------------------------------------------
-class MockCamera(object):
+class ICamera(object):
+  def capture(self, output, *args, **kw):
+    raise NotImplementedError()
+
+#------------------------------------------------------------------------------
+class MockCamera(ICamera):
 
   #----------------------------------------------------------------------------
   def __init__(self, *args, **kw):
@@ -31,11 +38,24 @@ class MockCamera(object):
   #----------------------------------------------------------------------------
   def capture(self, output, format=None, use_video_port=False, resize=None, splitter_port=0, **options):
     if format is not 'png':
-      raise ValueError('MockPiCamera only supports format "png"')
-    if resize != (240, 180):
-      raise ValueError('MockPiCamera only supports resize to 240x180')
-    output.write(asset.load('raspi_door:res/mock/camera-%d.png' % (self.current,)).read())
+      raise ValueError('MockCamera only supports format "png"')
+    data = asset.load('raspi_door:res/mock/camera-%d.png' % (self.current,)).read()
+    ret = None
+    if resize is None:
+      output.write(data)
+    else:
+      buf = six.BytesIO(data)
+      img = pygame.image.load(buf)
+      if True:
+      # if img.get_size() == resize:
+      #   output.write(data)
+      # else:
+        img = pygame.transform.scale(img, resize)
+        # todo: submit a patch to pygame to support a 'format=format' param...
+        pygame.image.save(img, output)
+        ret = pygame.image.tostring(img, 'RGB')
     self.current = ( self.current + 1 ) % 8
+    return ret
 
 #------------------------------------------------------------------------------
 # end of $Id$
