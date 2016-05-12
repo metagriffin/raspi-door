@@ -24,19 +24,14 @@ import time
 import threading
 import logging
 import csv
-import re
-import json
 
 from aadict import aadict
-import requests
-from xml.etree import ElementTree as ET
 from pgu import gui
 import six
+import asset
 
 from .service import Service
 from .icon import Icon
-
-# TODO: use `mock` config?...
 
 #------------------------------------------------------------------------------
 log = logging.getLogger(__name__)
@@ -46,8 +41,7 @@ class WeatherService(Service):
 
   section     = 'weather'
 
-  DEFAULT_URL           = 'http://api.openweathermap.org/data/2.5'
-  DEFAULT_APIKEY        = '0186ee1de078533203fc459fd05e3eed'
+  DEFAULT_DRIVER        = 'openweathermap'
 
   #----------------------------------------------------------------------------
   def __init__(self, *args, **kw):
@@ -56,13 +50,11 @@ class WeatherService(Service):
 
   #----------------------------------------------------------------------------
   def start(self):
-    if self.getConfig('driver', 'openweathermap') != 'openweathermap':
-      raise ValueError('currently, only the "openweathermap" driver is available')
     self.interval = float(self.getConfig('interval', 1800))
-    self.units    = self.getConfig('units', 'metric')
-    self.url      = self.getConfig('url', self.DEFAULT_URL)
     self.thread = threading.Thread(
       name='raspi_door.weather.WeatherService', target=self.runBackground)
+    self.driver = asset.plugins('raspi_door.plugins.weather').select(
+      self.getConfig('driver', self.DEFAULT_DRIVER)).handle(self)
     self.thread.daemon = True
     self.thread.start()
     return self.bumpNext()
@@ -236,13 +228,12 @@ class WeatherService(Service):
   #----------------------------------------------------------------------------
   def setData(self, data):
 
-    # print 'setData:',repr(data)
-
     self.data.pending = False
     if data is None:
       return self
     data = aadict.d2ar(data)
 
+    # TODO: this is yucky... strip this down to the "bare necessities"...
     if self.getConfig('csvlog'):
       fname = self.getConfig('csvlog')
       header = not os.path.exists(fname)
@@ -290,111 +281,7 @@ class WeatherService(Service):
   def fetch(self):
     if self.mock:
       return self.mockFetch()
-
-    params = dict(
-      appid  = self.getConfig('apikey', self.DEFAULT_APIKEY),
-      units  = self.units,
-      mode   = 'json',
-    )
-    if self.getConfig('location.id'):
-      params['id'] = self.getConfig('location.id')
-    else:
-      params['q'] = self.getConfig('location', 'Paris, FR')
-
-    ret = requests.get(self.url + '/weather', params=params)
-    ret.raise_for_status()
-    ret = aadict.d2ar(ret.json())
-
-    ret.units = aadict(
-      temperature = {'kelvin': 'K', 'metric': 'C', 'imperial': 'F'}[self.units],
-      pressure    = 'hPa',
-      speed       = {'kelvin': 'm/s', 'metric': 'm/s', 'imperial': 'mi/h'}[self.units],
-      distance    = 'N/A',  # todo: does OWM have this?
-    )
-    ret.build = time.ctime(ret.dt)
-    ret.location = aadict(
-      id          = ret.id,
-      text        = ret.name,
-      lat         = str(ret.coord.lat),
-      lon         = str(ret.coord.lon),
-    )
-    ret.condition = aadict(
-      date        = ret.build,
-      text        = ret.weather[0].description.capitalize(),  # todo: if too long, use weather[0].main
-      code        = ret.weather[0].id,
-      icon        = ret.weather[0].icon,
-      temp        = str(int(round(ret.main.temp))),
-    )
-    ret.image_url = 'http://openweathermap.org/img/w/{}.png'.format(ret.weather[0].icon)
-    ret.wind.direction = str(ret.wind.deg)
-    ret.wind.chill = ret.condition.temp  # todo: does OWM really not have a wind-chill???
-    ret.atmosphere = aadict(
-      pressure    = str(ret.main.pressure),
-      rising      = 'N/A',  # todo: does OWM have this?
-      visibility  = 'N/A',  # todo: does OWM have this?
-      humidity    = str(ret.main.humidity),
-    )
-    ret.astronomy = aadict(
-      sunrise     = re.sub('^0', '', time.strftime('%I:%M %p', time.localtime(ret.sys.sunrise)).lower()),
-      sunset      = re.sub('^0', '', time.strftime('%I:%M %p', time.localtime(ret.sys.sunset)).lower()),
-    )
-
-    ret.forecast = []
-
-    params = dict(
-      appid  = self.getConfig('apikey', self.DEFAULT_APIKEY),
-      units  = self.units,
-      mode   = 'json',
-      id     = ret.location.id,
-    )
-
-    res = aadict.d2ar(requests.get(self.url + '/forecast', params=params).json())
-    cur = time.time()
-
-    # TODO: make this get the "noon" values for the forecasts...
-    # TODO: use config "tomorrow" to determine the *next* value...
-    #       and then make an "offset" like value for the next value, eg "+6h"
-    #       ==> remember that this must be tz-aware...
-
-    for item in sorted(res.list, key=lambda i: i.dt):
-      if not ret.forecast:
-        if item.dt < ( cur + ( 3600 * 6 ) ):
-          continue
-      else:
-        if item.dt < ( ret.forecast[-1].dt + 86400 ):
-          continue
-      ret.forecast.append(aadict(
-        dt     = item.dt,
-        temp   = str(int(round(item.main.temp))),
-        high   = str(int(round(item.main.temp_max))),
-        low    = str(int(round(item.main.temp_min))),
-        code   = item.weather[0].id,
-        icon   = item.weather[0].icon,
-        text   = item.weather[0].description.capitalize(),  # todo: if too long, use weather[0].main
-        date   = re.sub('^0', '', time.strftime('%d %b %Y', time.localtime(item.dt))),
-        day    = time.strftime('%a', time.localtime(item.dt)),
-      ))
-
-    # data = {
-    #   'build': 'Sun, 08 Jun 2014 11:49 am EDT',
-    #   'units': {'distance':'km','speed':'km/h','temperature':'C','pressure':'mb'},
-    #   'location': {'id': '2459115', 'text': 'New York, NY, United States', 'lat': 40.67, 'lon': -73.95},
-    #   'condition': {'date':'Sun, 08 Jun 2014 11:49 am EDT','text':'Fair','code':'34','temp':'28'},
-    #   'image_url':'http://l.yimg.com/a/i/us/we/52/34.gif',
-    #   'wind': {'direction':'0','speed':'0','chill':'28'},
-    #   'atmosphere': {'pressure':'1014','rising':'2','visibility':'16.09','humidity':'35'},
-    #   'astronomy': {'sunset':'8:23 pm','sunrise':'5:23 am'},
-    #   'forecast':
-    #   [
-    #     {'high':'27','code':'45','low':'18','date':'8 Jun 2014','text':'Showers Late','day':'Sun'},
-    #     {'high':'21','code':'12','low':'18','date':'9 Jun 2014','text':'Rain/Thunder','day':'Mon'},
-    #     {'high':'27','code':'11','low':'19','date':'10 Jun 2014','text':'Showers','day':'Tue'},
-    #     {'high':'24','code':'26','low':'18','date':'11 Jun 2014','text':'Cloudy','day':'Wed'},
-    #     {'high':'23','code':'26','low':'19','date':'12 Jun 2014','text':'Cloudy','day':'Thu'},
-    #   ],
-    # }
-
-    return ret
+    return self.driver.fetch()
 
   #----------------------------------------------------------------------------
   def mockFetch(self):

@@ -56,6 +56,9 @@ entrypoints = {
   'console_scripts': [
     'raspi-door         = raspi_door:main',
   ],
+  'raspi_door.plugins.weather': [
+    'openweathermap     = raspi_door.plugins.weather.openweathermap:OpenWeatherMap',
+  ],
 }
 
 classifiers = [
