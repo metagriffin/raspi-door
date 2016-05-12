@@ -21,11 +21,14 @@
 
 import os
 import sys
-import six
 import time
 import threading
-import pygame
 import atexit
+import logging
+import subprocess
+
+import six
+import pygame
 try:
   import warnings
   warnings.filterwarnings('ignore')
@@ -47,10 +50,8 @@ import morph
 import smoke
 # import yuv2rgb
 from pgu import gui
-import logging
 from six.moves import configparser as CP
 from six.moves import shlex_quote
-import subprocess
 
 from .i18n import _
 from . import lock, camera, event, trap
@@ -59,6 +60,7 @@ from .clock import ClockService
 from .weather import WeatherService
 from .alert import AlertService
 from .sensor import SensorService
+from .util import parsedur
 
 #------------------------------------------------------------------------------
 CaptureEvent = event.newEvent()
@@ -227,7 +229,7 @@ class App(object):
     if self.sleeper:
       self.sleeper.cancel()
     self.sleeper = threading.Timer(
-      float(self.getConfig('timeout', section='screen', default=10)),
+      parsedur(self.getConfig('timeout', section='screen', default='10s')),
       self.sleep)
     self.sleeper.daemon = True
     self.sleeper.start()

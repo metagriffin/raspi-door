@@ -32,6 +32,7 @@ import asset
 
 from .service import Service
 from .icon import Icon
+from .util import parsedur
 
 #------------------------------------------------------------------------------
 log = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class WeatherService(Service):
 
   #----------------------------------------------------------------------------
   def start(self):
-    self.interval = float(self.getConfig('interval', 1800))
+    self.interval = parsedur(self.getConfig('interval', '30m'))
     self.thread = threading.Thread(
       name='raspi_door.weather.WeatherService', target=self.runBackground)
     self.driver = asset.plugins('raspi_door.plugins.weather').select(

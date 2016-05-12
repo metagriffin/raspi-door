@@ -23,20 +23,22 @@ import os
 import time
 import threading
 import logging
-import morph
 import atexit
-import pygame
 import re
+
+import morph
+import pygame
 import asset
 import six
-
-from .service import Service
-from .trap import Trap
 
 try:
   import RPi.GPIO as GPIO
 except RuntimeError:
   GPIO = None
+
+from .service import Service
+from .trap import Trap
+from .util import parsedur
 
 #------------------------------------------------------------------------------
 log = logging.getLogger(__name__)
@@ -85,7 +87,7 @@ class SensorService(Service, Trap):
     GPIO.setup(self.ledpin, GPIO.OUT, initial=GPIO.LOW)
     GPIO.setup(self.pirpin, GPIO.IN)
     atexit.register(GPIO.cleanup)
-    btime = int(1000 * float(self.getConfig('bell.debounce', 0.2)))
+    btime = int(1000 * parsedur(self.getConfig('bell.debounce', '0.2s')))
     GPIO.add_event_detect(self.btnpin, GPIO.FALLING, callback=self.onBellPressed, bouncetime=btime)
     GPIO.add_event_detect(self.pirpin, GPIO.BOTH,  callback=self.onMotionDetected)
 
