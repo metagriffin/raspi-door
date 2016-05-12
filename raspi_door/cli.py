@@ -71,7 +71,7 @@ def main(args=None):
     _('-m'), _('--mock'),
     dest='mock', default=False, action='store_true',
     help=_('enable mock mode of all services, hardware, software, wetware,'
-           ' mother-in-laws, earth-spheroid gravitational laws and general'
+           ' mother-in-laws, earth-spheroid gravitational laws, and general'
            ' parameters of the universe (where possible, of course)'))
 
   # cli.add_argument(
