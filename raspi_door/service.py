@@ -19,7 +19,10 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------
 
+from datetime import datetime
+
 import morph
+import pytz
 
 #------------------------------------------------------------------------------
 class Service(object):
@@ -32,11 +35,25 @@ class Service(object):
     self.app  = app
     self.next = None
     self.mock = morph.tobool(self.getConfig('mock', 'false'))
+    self.tz   = pytz.timezone(self.getConfig('tz', 'UTC'))
 
   #----------------------------------------------------------------------------
   def getConfig(self, option, default=None, **kw):
     kw.setdefault('section', self.section)
     return self.app.getConfig(option, default, **kw)
+
+  #----------------------------------------------------------------------------
+  def ts2dt(self, epoch):
+    '''
+    Converts unix epoch timestamp `epoch` to a timezone-aware
+    datetime.datetime object using the timezone specified for
+    this service.
+    '''
+    return datetime.fromtimestamp(epoch, self.tz)
+
+  #----------------------------------------------------------------------------
+  def dt2ts(self, dt):
+    return (dt - datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds()
 
   #----------------------------------------------------------------------------
   def start(self):
