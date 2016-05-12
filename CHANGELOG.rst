@@ -3,6 +3,16 @@ ChangeLog
 =========
 
 
+v0.6.0
+======
+
+* Added OpenWeatherMap.org configurations to control which
+  forecast timeframe is displayed:
+
+  * forecast.today.offset
+  * forecast.today.cutoff
+
+
 v0.5.0
 ======
 
