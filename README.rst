@@ -71,9 +71,25 @@ Raspi-Door Software
   $ virtualenv --prompt '(raspi-door) ' /path/to/virtualenv
   $ . /path/to/virtualenv/bin/activate
 
-  # install pre-requisites that have problems with pip...
+  # install pre-requisite pygame
+  #   => not needed once issue #59 has been fixed:
+  #     https://bitbucket.org/pygame/pygame/issues/59/pygame-and-pip
   # TODO: figure out why this is necessary...
-  $ easy_install pygame==1.9.1release pgu==0.18
+  $ wget http://www.pygame.org/ftp/pygame-1.9.1release.tar.gz
+  # IFF pygame disappears, there is a cache here:
+    $ wget https://github.com/metagriffin/raspi-door/raw/master/cache/pygame-1.9.1release.tar.gz
+  $ sudo apt-get install libsdl1.2-dev libsdl-image1.2-dev \
+    libsdl-mixer1.2-dev libsdl-ttf2.0-dev \
+    libsmpeg-dev libportmidi-dev
+  $ ln -s ../libv4l1-videodev.h /usr/include/linux/videodev.h
+  $ easy_install pygame-1.9.1release.tar.gz
+
+  # install pre-requisite pgu
+  # TODO: figure out why this is necessary...
+  $ wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/pgu/pgu-0.18.zip
+  # IFF pgu disappears, there is a cache here:
+    $ wget https://github.com/metagriffin/raspi-door/raw/master/cache/pgu-0.18.zip
+  $ easy_install pgu-0.18.zip
 
   $ pip install raspi-door
 
