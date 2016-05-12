@@ -38,14 +38,13 @@ test_dependencies = [
 ]
 
 dependencies = [
-  'distribute           >= 0.6.24',
   'smoke                >= 0.2.0',
   'picamera             >= 0.8',
   'RPi.GPIO             >= 0.5.5',
   'six                  >= 1.8.0',
-  'aadict               >= 0.2.1',
-  'morph                >= 0.1.1',
-  'asset                >= 0.6',          # globre >= 0.1.2
+  'aadict               >= 0.2.2',
+  'morph                >= 0.1.2',
+  'asset                >= 0.6.10',          # globre >= 0.0.5
   'pygame               >= 1.9.1',
   'pgu                  >= 0.18',
   'pytz                 >= 2014.4',
