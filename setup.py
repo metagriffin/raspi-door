@@ -50,6 +50,7 @@ dependencies = [
   'pytz                 >= 2014.4',
   'requests             >= 2.3.0',
   'protobuf             >= 2.5.0',
+  'simpleduration       >= 0.1.0',
 ]
 
 entrypoints = {
