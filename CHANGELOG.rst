@@ -3,6 +3,12 @@ ChangeLog
 =========
 
 
+v0.5.0
+======
+
+* Moved to use OpenWeatherMap.org for weather data
+
+
 v0.4.0
 ======
 
