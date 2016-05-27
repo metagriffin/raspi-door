@@ -19,6 +19,7 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------
 
+import time
 from datetime import datetime
 
 import morph
@@ -29,13 +30,17 @@ class Service(object):
 
   section = 'DEFAULT'
 
+  DEFAULT_TZ            = 'UTC'
+  DEFAULT_LOCALE        = 'en'
+
   #----------------------------------------------------------------------------
   def __init__(self, app, *args, **kw):
     super(Service, self).__init__(*args, **kw)
-    self.app  = app
-    self.next = None
-    self.mock = morph.tobool(self.getConfig('mock', 'false'))
-    self.tz   = pytz.timezone(self.getConfig('tz', 'UTC'))
+    self.app    = app
+    self.next   = None
+    self.mock   = morph.tobool(self.getConfig('mock', 'false'))
+    self.tz     = pytz.timezone(self.getConfig('tz', self.DEFAULT_TZ))
+    self.locale = self.getConfig('locale', self.DEFAULT_LOCALE)
 
   #----------------------------------------------------------------------------
   def getConfig(self, option, default=None, **kw):
@@ -53,7 +58,22 @@ class Service(object):
 
   #----------------------------------------------------------------------------
   def dt2ts(self, dt):
+    # TODO: if dt is "timezone-naive", assume in `self.tz`
     return (dt - datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds()
+
+  #----------------------------------------------------------------------------
+  def ts2str(self, fmt=None, epoch=None):
+    if epoch is None:
+      if fmt is not None and isinstance(fmt, (int, float)):
+        fmt, epoch = None, fmt
+      else:
+        epoch = time.time()
+    if not fmt:
+      fmt = 'iso-8601-combined'
+    if fmt.lower() in ('iso', 'iso-8601', 'iso-8601-combined'):
+      ms = '.%03d' % (round(epoch * 1000) % 1000,)
+      return time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(epoch)) + ms + 'Z'
+    return time.strftime(fmt, self.ts2dt(epoch).timetuple())
 
   #----------------------------------------------------------------------------
   def start(self):
