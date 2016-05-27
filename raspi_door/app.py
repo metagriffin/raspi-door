@@ -202,7 +202,7 @@ class App(object):
 
   #----------------------------------------------------------------------------
   def sensorAction(self, topic, event, *args, **kw):
-    print 'SENSOR: ',topic,'=>',event
+    # print 'SENSOR: ',topic,'=>',event
     self.wake()
     if topic in ('bell', 'lock', 'nfc'):
       self.state.showcam = True
@@ -239,7 +239,7 @@ class App(object):
   def onShowScreen(self, old, new, **kw):
     if new:
       self.resetSleeper()
-    print 'SCREEN-SHOW:',repr(old),'=>',repr(new)
+    # print 'SCREEN-SHOW:',repr(old),'=>',repr(new)
     # TODO...
 
   #----------------------------------------------------------------------------
@@ -444,7 +444,7 @@ class App(object):
       pygame.quit()
       raise SystemExit()
 
-    print 'EVENT:',repr(event)
+    print 'EVENT:', repr(event)
     self.pguapp.event(event)
 
   #----------------------------------------------------------------------------
