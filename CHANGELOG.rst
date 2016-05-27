@@ -3,7 +3,25 @@ ChangeLog
 =========
 
 
-v0.6.0
+v0.7.0
+======
+
+* Fixed weather service to properly use the `tz` configuration
+
+* Added OpenWeatherMap.org configurations to control tomorrow's
+  forecast:
+
+  * forecast.tomorrow.offset
+
+* Re-added the "yahoo" weather service driver (though it appears to be
+  non-functional without authentication) -- buyer beware
+
+* Added startup sound "Ready to serve!"
+
+* Other small fix-ups and clean-ups
+
+
+v0.6.1
 ======
 
 * Added OpenWeatherMap.org configurations to control which
