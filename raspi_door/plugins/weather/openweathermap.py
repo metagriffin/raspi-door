@@ -44,8 +44,16 @@ if not hasattr(requests.Response, 'require_ok'):
 @asset.plugin('raspi_door.plugins.weather', 'openweathermap', final=True)
 class OpenWeatherMap(object):
 
+  # openweathermap documentation:
+  #   http://openweathermap.org/api                     # api
+  #   http://openweathermap.org/weather-data            # units
+  #   http://openweathermap.org/weather-conditions      # codes
+
   DEFAULT_URL           = 'http://api.openweathermap.org/data/2.5'
   DEFAULT_APIKEY        = '0186ee1de078533203fc459fd05e3eed'
+  DEFAULT_OFFSET        = '6h'
+  DEFAULT_CUTOFF        = '22h'
+  DEFAULT_TOMORROW      = '12h'
 
   METRIC                = 'metric'
   KELVIN                = 'kelvin'
@@ -66,6 +74,7 @@ class OpenWeatherMap(object):
       appid  = self.service.getConfig('apikey', self.DEFAULT_APIKEY),
       units  = self.units,
       mode   = 'json',
+      lang   = self.service.locale,
     )
     if self.service.getConfig('location.id'):
       params['id'] = self.service.getConfig('location.id')
@@ -75,15 +84,13 @@ class OpenWeatherMap(object):
     ret = aadict.d2ar(
       requests.get(self.url + '/weather', params=params).require_ok().json())
 
-    # TODO: make all of these time.ctime and time.strftime use `tz` instead!
-
     ret.units = aadict(
       temperature = {'kelvin': 'K', 'metric': 'C', 'imperial': 'F'}[self.units],
       pressure    = 'hPa',
       speed       = {'kelvin': 'm/s', 'metric': 'm/s', 'imperial': 'mi/h'}[self.units],
       distance    = 'N/A',  # todo: does OWM have this?
     )
-    ret.build = time.ctime(ret.dt)
+    ret.build = self.service.ts2str(ret.dt)
     ret.location = aadict(
       id          = ret.id,
       text        = ret.name,
@@ -107,43 +114,37 @@ class OpenWeatherMap(object):
       humidity    = str(ret.main.humidity),
     )
     ret.astronomy = aadict(
-      sunrise     = re.sub('^0', '', time.strftime('%I:%M %p', time.localtime(ret.sys.sunrise)).lower()),
-      sunset      = re.sub('^0', '', time.strftime('%I:%M %p', time.localtime(ret.sys.sunset)).lower()),
+      sunrise     = re.sub('^0', '', self.service.ts2str('%I:%M %p', ret.sys.sunrise)).lower(),
+      sunset      = re.sub('^0', '', self.service.ts2str('%I:%M %p', ret.sys.sunset)).lower(),
     )
 
     ret.forecast = []
 
     params  = dict(
+      id      = ret.location.id,
       appid   = self.service.getConfig('apikey', self.DEFAULT_APIKEY),
       units   = self.units,
       mode    = 'json',
-      id      = ret.location.id,
+      lang    = self.service.locale,
     )
 
     res     = aadict.d2ar(
       requests.get(self.url + '/forecast', params=params).require_ok().json())
 
-    offset  = parsedur(self.service.getConfig('forecast.today.offset', '6h'))
-    cutoff  = parsedur(self.service.getConfig('forecast.today.cutoff', '21h'))
+    offset  = parsedur(self.service.getConfig('forecast.today.offset', self.DEFAULT_OFFSET))
+    cutoff  = parsedur(self.service.getConfig('forecast.today.cutoff', self.DEFAULT_CUTOFF))
     nowts   = time.time()
     nowdt   = self.service.ts2dt(nowts)
     todaydt = nowdt.replace(hour=0, minute=0, second=0, microsecond=0)
     todayts = self.service.dt2ts(todaydt)
 
     if nowts + offset < todayts + cutoff:
-      print 'forecast: today'
       target  = nowts + offset
       istoday = True
     else:
-      print 'FORECAST: TOMORROW'
-      # todo: should the tomorrow's forecast time be configurable?
-      target  = todayts + ( 1.5 * 86400 )
+      target  = todayts + 86400 \
+        + parsedur(self.service.getConfig('forecast.tomorrow.offset', self.DEFAULT_TOMORROW))
       istoday = False
-
-    # TODO: make this get the "noon" values for the forecasts...
-    # TODO: use config "tomorrow" to determine the *next* value...
-    #       and then make an "offset" like value for the next value, eg "+6h"
-    #       ==> remember that this must be tz-aware...
 
     for item in sorted(res.list, key=lambda i: i.dt):
       if not ret.forecast:
@@ -160,14 +161,15 @@ class OpenWeatherMap(object):
         code   = item.weather[0].id,
         icon   = item.weather[0].icon,
         text   = item.weather[0].description.capitalize(),  # todo: if too long, use weather[0].main
-        date   = re.sub('^0', '', time.strftime('%d %b %Y', time.localtime(item.dt))),
-        day    = time.strftime('%a', time.localtime(item.dt)),
+        date   = re.sub('^0', '', self.service.ts2str('%d %b %Y', item.dt)),
+        day    = self.service.ts2str('%a', item.dt),
         today  = False,
       ))
-      if len(ret.forecast) == 1 and istoday:
+      if istoday:
         ret.forecast[0].today = True
         ret.forecast[0].day = re.sub(
-          '^0', '', time.strftime('%I%p', time.localtime(item.dt))).lower()
+          '^0', '', self.service.ts2str('%I%p', item.dt)).lower()
+      break
 
     # data = {
     #   'build': 'Sun, 08 Jun 2014 11:49 am EDT',
