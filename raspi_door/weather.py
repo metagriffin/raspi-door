@@ -105,10 +105,11 @@ class WeatherService(Service):
     forecast = self.data.forecast[0]
     deg = u'°'
     self.app.ui.weatherbox.find('lbl-forecast-temp').set_text(
-      forecast.day + ': ' + forecast.high + deg + '/' + forecast.low + deg)
+      forecast.day + ': ' + forecast.high + deg
+      + ( '' if forecast.high == forecast.low else ( '/' + forecast.low + deg ) ) )
     # todo: change this to make it a % probability of rain, if rain...
     self.app.ui.weatherbox.find('lbl-now-text').set_text(self.data.condition.text)
-    wspeed = float(self.data.wind.speed)
+    wspeed = float(self.data.wind.speed or 0)
     wunit  = self.data.units.speed
     if wunit == 'm/s':
       # m/s => km/h
@@ -121,9 +122,9 @@ class WeatherService(Service):
       self.app.ui.weatherbox.find('lbl-now-wind').set_text(
         str(wspeed)
         + ' ' + wunit
-        + ' ' + self.deg2dir(float(self.data.wind.direction)))
+        + ' ' + self.deg2dir(float(self.data.wind.direction or 0)))
     self.app.ui.weatherbox.find('lbl-now-temp').set_text(
-      self.data.wind.chill + deg + self.data.units.temperature)
+      str(self.data.wind.chill) + deg + str(self.data.units.temperature))
     icname = self.cond2icname(self.data.condition.icon)
     self.app.ui.weatherbox.find('btn-weather').value = \
       gui.Image(Icon.load(icname).bitmap)
