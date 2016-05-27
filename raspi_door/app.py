@@ -380,6 +380,8 @@ class App(object):
 
     self.redraw()
 
+    self.sensors.trigger('app', 'started')
+
     nsvc = self.getNextService()
 
     while True:

@@ -45,6 +45,7 @@ log = logging.getLogger(__name__)
 
 DEFAULT_EVENT_ACTION = {
   'bell.pressed.play' : 'raspi_door:res/audio/doorbell.ogg',
+  'app.started.play'  : 'raspi_door:res/audio/readytoserve.ogg',
 }
 
 isAssetSpec = re.compile('^[a-z][a-z0-9_]*:', re.IGNORECASE)
