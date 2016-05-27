@@ -59,6 +59,7 @@ entrypoints = {
   ],
   'raspi_door.plugins.weather': [
     'openweathermap     = raspi_door.plugins.weather.openweathermap:OpenWeatherMap',
+    'yahoo              = raspi_door.plugins.weather.yahoo:YahooWeather',
   ],
 }
 
