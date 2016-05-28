@@ -3,6 +3,12 @@ ChangeLog
 =========
 
 
+v0.7.1
+======
+
+* Fixed handling of null wind chill factor
+
+
 v0.7.0
 ======
 
