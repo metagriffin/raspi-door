@@ -105,8 +105,11 @@ class OpenWeatherMap(object):
       temp        = str(int(round(ret.main.temp))),
     )
     ret.image_url = 'http://openweathermap.org/img/w/{}.png'.format(ret.weather[0].icon)
-    ret.wind.direction = str(ret.wind.deg)
-    ret.wind.chill = ret.condition.temp  # todo: does OWM really not have a wind-chill???
+    ret.wind.direction = str(ret.wind.deg) if ret.wind.deg is not None else None
+    # todo: does OWM really not have a wind-chill???
+    #       ==> and it should really not set `chill` if it does not know...
+    ret.wind.chill = ret.condition.temp
+    # /todo
     ret.atmosphere = aadict(
       pressure    = str(ret.main.pressure),
       rising      = 'N/A',  # todo: does OWM have this?
