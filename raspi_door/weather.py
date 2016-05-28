@@ -92,16 +92,19 @@ class WeatherService(Service):
 
   #----------------------------------------------------------------------------
   def run(self):
+    try:
+      self.renderData()
+    except:
+      log.exception('failed to render weather data')
+      self.renderVoid()
+    return self.bumpNext()
+
+  #----------------------------------------------------------------------------
+  def renderData(self):
     if not self.data.last:
-      return self.bumpNext()
+      return self.renderVoid()
     if ( time.time() - self.data.last ) >= ( 2 * self.interval ):
-      # probably having issues...
-      self.app.ui.weatherbox.find('lbl-forecast-temp').set_text('--/--')
-      self.app.ui.weatherbox.find('lbl-now-temp').set_text('--')
-      self.app.ui.weatherbox.find('lbl-now-text').set_text('--')
-      self.app.ui.weatherbox.find('lbl-now-wind').set_text('--')
-      self.app.ui.weatherbox.find('btn-weather').value = gui.Image(Icon.load('weather-na').bitmap)
-      return self.bumpNext()
+      return self.renderVoid()
     forecast = self.data.forecast[0]
     deg = u'°'
     self.app.ui.weatherbox.find('lbl-forecast-temp').set_text(
@@ -132,7 +135,15 @@ class WeatherService(Service):
     # self.data.image = requests.get(self.data.image_url).content
     # self.app.ui.weatherbox.find('btn-weather').value = \
     #   gui.Image(Icon.load(six.BytesIO(self.data.image)).bitmap)
-    return self.bumpNext()
+    return
+
+  #----------------------------------------------------------------------------
+  def renderVoid(self):
+    self.app.ui.weatherbox.find('lbl-forecast-temp').set_text('--/--')
+    self.app.ui.weatherbox.find('lbl-now-temp').set_text('--')
+    self.app.ui.weatherbox.find('lbl-now-text').set_text('--')
+    self.app.ui.weatherbox.find('lbl-now-wind').set_text('--')
+    self.app.ui.weatherbox.find('btn-weather').value = gui.Image(Icon.load('weather-na').bitmap)
 
   #----------------------------------------------------------------------------
   conditions = {
